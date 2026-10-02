@@ -21,119 +21,161 @@ namespace NNPTPZ1
     /// This program should produce Newton fractals.
     /// See more at: https://en.wikipedia.org/wiki/Newton_fractal
     /// </summary>
+    ///
+    /// Na začátku vytvoříme 2D plochu pro reálná a komplexní čísla pomocí 2 rozměrného pole "rozmeryVyslednehoObrazu"
+    /// Poté dosadíme hranice pro obě osy dolní a horní hranici imaginární osy a dolní a horní hranici reálné osy
+    /// "Im∈[−2,2]" a "RealneCislo∈[−2,2]"
+    /// Vytvoříme si polynom pro Newtonovu funkci 
+    /// Jako první výchozí bod pro Newtonovu funkci nám slouží -2 na Im a -2 na RealneCislo
+    /// Od tohoto bodu počítáme funkci a dostáváme se do kořenů
+    /// Pixel z bodu -2 -2 tedy poté dostane barvu daného kořene do kterého došel 
+    /// Poté vezmeme další bod a opět spočítáme do kterého kořene jsme z něj došli a takto projdeme celou plochu
+    /// A jak výpočet probíhá?
+    /// Mějme polynom polynom(x) = 3x^3 + 1
+    /// Z něho uděláme derivaci tedy 9x^2
+    /// Proč derivace? -Netwonova metoda používá polynom i jeho derivaci zároveň 
+    /// Vzorec: zn+1​=zn​− {polynom(zn​)​ /polynom′(zn​)}
+    /// Jak poté poznáme, že jsme u kořene? 
+    /// Výsledky newtonovy funkce dosazujeme zpět do původního polynomu a když je polynom roven 0 máme kořen
     class Program
     {
         static void Main(string[] args)
         {
-            int[] intargs = new int[2];
-            for (int i = 0; i < intargs.Length; i++)
+
+            int[] rozmeryVyslednehoObrazu = new int[2];
+            for (int i = 0; i < rozmeryVyslednehoObrazu.Length; i++)
             {
-                intargs[i] = int.Parse(args[i]);
+                rozmeryVyslednehoObrazu[i] = int.Parse(args[i]);
             }
-            double[] doubleargs = new double[4];
-            for (int i = 0; i < doubleargs.Length; i++)
+            double[] hraniceKomplexniRoviny
+                = new double[4];
+            for (int i = 0; i < hraniceKomplexniRoviny.Length; i++)
             {
-                doubleargs[i] = double.Parse(args[i + 2]);
+                hraniceKomplexniRoviny[i] = double.Parse(args[i + 2]);
             }
             string output = args[6];
             // TODO: add parameters from args?
-            Bitmap bmp = new Bitmap(intargs[0], intargs[1]);
-            double xmin = doubleargs[0];
-            double xmax = doubleargs[1];
-            double ymin = doubleargs[2];
-            double ymax = doubleargs[3];
+            /*
+             * Toto představuje plochu "Im∈[−2,2]" a "RealneCislo∈[−2,2]"
+             */
+            Bitmap outputPicture = new Bitmap(rozmeryVyslednehoObrazu[0], rozmeryVyslednehoObrazu[1]);
 
-            double xstep = (xmax - xmin) / intargs[0];
-            double ystep = (ymax - ymin) / intargs[1];
+            /*
+                Nastavení hranic podle vstupů 
+                Ty nám říkají jakou část roviny budeme zkoumat
+             */
 
-            List<Cplx> koreny = new List<Cplx>();
+            double levaHraniceKomplexniRoviny = hraniceKomplexniRoviny[0];
+            double pravaHraniceKomplexniRoviny = hraniceKomplexniRoviny[1];
+            double dolniHraniceKomplexniRoviny = hraniceKomplexniRoviny[2];
+            double horniHraniceKomplexniRoviny = hraniceKomplexniRoviny[3];
+
+            /*
+                Převod pixelu na komplexní čísla 
+                1 krok nám určuje o kolik se posuneme v naší komplexní rovině pokud se posuneme o 1 pixel 
+                Máme reálnou a imaginární komplexní rovinu dá se uchopit jako klasický graf vysledek osami y kde y je imaginární a x je reálná
+                na ose reálné máme čísla reálná na imaginární máme komplexní 
+                tedy např. 
+                    z = 1,5 + 2i
+                    1,5 bude na reálné ose a 2i na ose imaginární    
+             */
+            double xKrok = (pravaHraniceKomplexniRoviny - levaHraniceKomplexniRoviny) / rozmeryVyslednehoObrazu[0];
+            double yKrok = (horniHraniceKomplexniRoviny - dolniHraniceKomplexniRoviny) / rozmeryVyslednehoObrazu[1];
+
+            List<KomplexniCisla> korenyPolynomu = new List<KomplexniCisla>(); //KomplexniCisla - Komplexní číslo // tedy list Komplexnich cisel 
             // TODO: poly should be parameterised?
-            Poly p = new Poly();
-            p.Coe.Add(new Cplx() { Re = 1 });
-            p.Coe.Add(Cplx.Zero);
-            p.Coe.Add(Cplx.Zero);
-            //p.Coe.Add(Cplx.Zero);
-            p.Coe.Add(new Cplx() { Re = 1 });
-            Poly ptmp = p;
-            Poly pd = p.Derive();
+            /*
+             Vytvoření polynomu pro Newtonovu metodu tedy máme polynom polynom(x) = 3x^3 + 1
+             Spočítáme pro něj kořeny jelikož máme kubický polynom máme 3 kořeny
+             
+             */
+            Polynom polynom = new Polynom();
+            polynom.Koeficienty.Add(new KomplexniCisla() { RealneCislo = 1 });
+            polynom.Koeficienty.Add(KomplexniCisla.Zero);
+            polynom.Koeficienty.Add(KomplexniCisla.Zero);
+            //polynom.Koeficienty.Add(KomplexniCisla.Zero);
+            polynom.Koeficienty.Add(new KomplexniCisla() { RealneCislo = 1 });
+            //Polynom ptmp = polynom;
+            Polynom derivacePolynomu = polynom.Derive();
 
-            Console.WriteLine(p);
-            Console.WriteLine(pd);
+            Console.WriteLine(polynom);
+            Console.WriteLine(derivacePolynomu);
 
-            var clrs = new Color[]
+            var barvy = new Color[]
             {
                 Color.Red, Color.Blue, Color.Green, Color.Yellow, Color.Orange, Color.Fuchsia, Color.Gold, Color.Cyan, Color.Magenta
             };
 
-            var maxid = 0;
+            var pocetKorenuCelkem = 0;
 
             // TODO: cleanup!!!
             // for every pixel in image...
-            for (int i = 0; i < intargs[0]; i++)
+            for (int i = 0; i < rozmeryVyslednehoObrazu[0]; i++)
             {
-                for (int j = 0; j < intargs[1]; j++)
+                for (int j = 0; j < rozmeryVyslednehoObrazu[1]; j++)
                 {
                     // find "world" coordinates of pixel
-                    double y = ymin + i * ystep;
-                    double x = xmin + j * xstep;
+                    double y = dolniHraniceKomplexniRoviny + i * yKrok;
+                    double x = levaHraniceKomplexniRoviny + j * xKrok;
 
-                    Cplx ox = new Cplx()
+                    KomplexniCisla bodVProstoru = new KomplexniCisla()
                     {
-                        Re = x,
-                        Imaginari = (float)(y)
+                        RealneCislo = x,
+                        KomplexniCislo = (float)(y)
                     };
 
-                    if (ox.Re == 0)
-                        ox.Re = 0.0001;
-                    if (ox.Imaginari == 0)
-                        ox.Imaginari = 0.0001f;
+                    if (bodVProstoru.RealneCislo == 0)
+                        bodVProstoru.RealneCislo = 0.0001;
+                    if (bodVProstoru.KomplexniCislo == 0)
+                        bodVProstoru.KomplexniCislo = 0.0001f;
 
-                    //Console.WriteLine(ox);
+                    //Console.WriteLine(bodVProstoru);
 
-                    // find solution of equation using newton's iteration
-                    float it = 0;
-                    for (int q = 0; q< 30; q++)
+                    // find solution of equation using newton'vysledek iteration
+                    float iterace = 0;
+                    for (int cisloIterace = 0; cisloIterace< 30; cisloIterace++)
                     {
-                        var diff = p.Eval(ox).Divide(pd.Eval(ox));
-                        ox = ox.Subtract(diff);
+                        var krokNewtonovyFunkce  = polynom.VypocitelHodnotu(bodVProstoru).Vydel(derivacePolynomu.VypocitelHodnotu(bodVProstoru));
+                        bodVProstoru = bodVProstoru.Odecti(krokNewtonovyFunkce);
 
-                        //Console.WriteLine($"{q} {ox} -({diff})");
-                        if (Math.Pow(diff.Re, 2) + Math.Pow(diff.Imaginari, 2) >= 0.5)
+                        //Console.WriteLine($"{cisloIterace} {bodVProstoru} -({krokNewtonovyFunkce})");
+                        if (Math.Pow(krokNewtonovyFunkce.RealneCislo, 2) + Math.Pow(krokNewtonovyFunkce.KomplexniCislo, 2) >= 0.5)
                         {
-                            q--;
+                            cisloIterace--;
                         }
-                        it++;
+                        iterace++;
                     }
 
                     //Console.ReadKey();
 
                     // find solution root number
-                    var known = false;
-                    var id = 0;
-                    for (int w = 0; w <koreny.Count;w++)
+                    var jeZnamyKoren = false;
+                    var cisloKorene = 0;
+                    for (int w = 0; w <korenyPolynomu.Count;w++)
                     {
-                        if (Math.Pow(ox.Re- koreny[w].Re, 2) + Math.Pow(ox.Imaginari - koreny[w].Imaginari, 2) <= 0.01)
+                        // Pokud jsme z bodu nedošli ke kořeni ale máme např. malou odchylku tedy 0.01
+                        if (Math.Pow(bodVProstoru.RealneCislo- korenyPolynomu[w].RealneCislo, 2) + Math.Pow(bodVProstoru.KomplexniCislo - korenyPolynomu[w].KomplexniCislo, 2) <= 0.01)
                         {
-                            known = true;
-                            id = w;
+                            jeZnamyKoren = true;
+                            cisloKorene = w;
                         }
                     }
-                    if (!known)
+                    if (!jeZnamyKoren)
                     {
-                        koreny.Add(ox);
-                        id = koreny.Count;
-                        maxid = id + 1; 
+                        korenyPolynomu.Add(bodVProstoru);
+                        cisloKorene = korenyPolynomu.Count;
+                        pocetKorenuCelkem = cisloKorene + 1; 
                     }
 
                     // colorize pixel according to root number
-                    //int vv = id;
-                    //int vv = id * 50 + (int)it*5;
-                    var vv = clrs[id % clrs.Length];
+                    //int vv = cisloKorene;
+                    //int vv = cisloKorene * 50 + (int)iterace*5;
+                    var vv = barvy[cisloKorene % barvy.Length];
                     vv = Color.FromArgb(vv.R, vv.G, vv.B);
-                    vv = Color.FromArgb(Math.Min(Math.Max(0, vv.R-(int)it*2), 255), Math.Min(Math.Max(0, vv.G - (int)it*2), 255), Math.Min(Math.Max(0, vv.B - (int)it*2), 255));
+                    vv = Color.FromArgb(Math.Min(Math.Max(0, vv.R-(int)iterace*2), 255), Math.Min(Math.Max(0, vv.G - (int)iterace*2), 255), Math.Min(Math.Max(0, vv.B - (int)iterace*2), 255));
                     //vv = Math.Min(Math.Max(0, vv), 255);
-                    bmp.SetPixel(j, i, vv);
-                    //bmp.SetPixel(j, i, Color.FromArgb(vv, vv, vv));
+                    outputPicture.SetPixel(j, i, vv);
+                    //image.SetPixel(j, i, Color.FromArgb(vv, vv, vv));
                 }
             }
 
@@ -142,47 +184,47 @@ namespace NNPTPZ1
             //{
             //    for (int j = 0; j < 300; j++)
             //    {
-            //        Color c = bmp.GetPixel(j, i);
-            //        int nv = (int)Math.Floor(c.R * (255.0 / maxid));
-            //        bmp.SetPixel(j, i, Color.FromArgb(nv, nv, nv));
+            //        Color c = image.GetPixel(j, i);
+            //        int nv = (int)Math.Floor(c.R * (255.0 / pocetKorenuCelkem));
+            //        image.SetPixel(j, i, Color.FromArgb(nv, nv, nv));
             //    }
             //}
 
-                    bmp.Save(output ?? "../../../out.png");
+            outputPicture.Save(output ?? "../../../out.png");
             //Console.ReadKey();
         }
     }
 
     namespace Mathematics
     {
-        public class Poly
+        public class Polynom
         {
             /// <summary>
-            /// Coe
+            /// Koeficienty
             /// </summary>
-            public List<Cplx> Coe { get; set; }
+            public List<KomplexniCisla> Koeficienty { get; set; }
 
             /// <summary>
             /// Constructor
             /// </summary>
-            public Poly() => Coe = new List<Cplx>();
+            public Polynom() => Koeficienty = new List<KomplexniCisla>();
 
-            public void Add(Cplx coe) =>
-                Coe.Add(coe);
+            public void Add(KomplexniCisla koeficient) =>
+                Koeficienty.Add(koeficient);
 
             /// <summary>
             /// Derives this polynomial and creates new one
             /// </summary>
             /// <returns>Derivated polynomial</returns>
-            public Poly Derive()
+            public Polynom Derive()
             {
-                Poly p = new Poly();
-                for (int q = 1; q < Coe.Count; q++)
+                Polynom polynom = new Polynom();
+                for (int q = 1; q < Koeficienty.Count; q++)
                 {
-                    p.Coe.Add(Coe[q].Multiply(new Cplx() { Re = q }));
+                    polynom.Koeficienty.Add(Koeficienty[q].Vynasob(new KomplexniCisla() { RealneCislo = q }));
                 }
 
-                return p;
+                return polynom;
             }
 
             /// <summary>
@@ -190,9 +232,9 @@ namespace NNPTPZ1
             /// </summary>
             /// <param name="x">point of evaluation</param>
             /// <returns>y</returns>
-            public Cplx Eval(double x)
+            public KomplexniCisla Eval(double x)
             {
-                var y = Eval(new Cplx() { Re = x, Imaginari = 0 });
+                var y = VypocitelHodnotu(new KomplexniCisla() { RealneCislo = x, KomplexniCislo = 0 });
                 return y;
             }
 
@@ -201,24 +243,24 @@ namespace NNPTPZ1
             /// </summary>
             /// <param name="x">point of evaluation</param>
             /// <returns>y</returns>
-            public Cplx Eval(Cplx x)
+            public KomplexniCisla VypocitelHodnotu(KomplexniCisla x)
             {
-                Cplx s = Cplx.Zero;
-                for (int i = 0; i < Coe.Count; i++)
+                KomplexniCisla s = KomplexniCisla.Zero;
+                for (int i = 0; i < Koeficienty.Count; i++)
                 {
-                    Cplx coef = Coe[i];
-                    Cplx bx = x;
-                    int power = i;
+                    KomplexniCisla koeficient = Koeficienty[i];
+                    KomplexniCisla mocnina = x;
+                    int exponent = i;
 
                     if (i > 0)
                     {
-                        for (int j = 0; j < power - 1; j++)
-                            bx = bx.Multiply(x);
+                        for (int j = 0; j < exponent - 1; j++)
+                            mocnina = mocnina.Vynasob(x);
 
-                        coef = coef.Multiply(bx);
+                        koeficient = koeficient.Vynasob(mocnina);
                     }
 
-                    s = s.Add(coef);
+                    s = s.Add(koeficient);
                 }
 
                 return s;
@@ -230,102 +272,102 @@ namespace NNPTPZ1
             /// <returns>String repr of polynomial</returns>
             public override string ToString()
             {
-                string s = "";
+                string vysledek = "";
                 int i = 0;
-                for (; i < Coe.Count; i++)
+                for (; i < Koeficienty.Count; i++)
                 {
-                    s += Coe[i];
+                    vysledek += Koeficienty[i];
                     if (i > 0)
                     {
                         int j = 0;
                         for (; j < i; j++)
                         {
-                            s += "x";
+                            vysledek += "x";
                         }
                     }
-                    if (i+1<Coe.Count)
-                    s += " + ";
+                    if (i+1<Koeficienty.Count)
+                    vysledek += " + ";
                 }
-                return s;
+                return vysledek;
             }
         }
 
-        public class Cplx
+        public class KomplexniCisla
         {
-            public double Re { get; set; }
-            public float Imaginari { get; set; }
+            public double RealneCislo { get; set; }
+            public float KomplexniCislo { get; set; }
 
             public override bool Equals(object obj)
             {
-                if (obj is Cplx)
+                if (obj is KomplexniCisla)
                 {
-                    Cplx x = obj as Cplx;
-                    return x.Re == Re && x.Imaginari == Imaginari;
+                    KomplexniCisla x = obj as KomplexniCisla;
+                    return x.RealneCislo == RealneCislo && x.KomplexniCislo == KomplexniCislo;
                 }
                 return base.Equals(obj);
             }
 
-            public readonly static Cplx Zero = new Cplx()
+            public readonly static KomplexniCisla Zero = new KomplexniCisla()
             {
-                Re = 0,
-                Imaginari = 0
+                RealneCislo = 0,
+                KomplexniCislo = 0
             };
 
-            public Cplx Multiply(Cplx b)
+            public KomplexniCisla Vynasob(KomplexniCisla b)
             {
-                Cplx a = this;
+                KomplexniCisla a = this;
                 // aRe*bRe + aRe*bIm*i + aIm*bRe*i + aIm*bIm*i*i
-                return new Cplx()
+                return new KomplexniCisla()
                 {
-                    Re = a.Re * b.Re - a.Imaginari * b.Imaginari,
-                    Imaginari = (float)(a.Re * b.Imaginari + a.Imaginari * b.Re)
+                    RealneCislo = a.RealneCislo * b.RealneCislo - a.KomplexniCislo * b.KomplexniCislo,
+                    KomplexniCislo = (float)(a.RealneCislo * b.KomplexniCislo + a.KomplexniCislo * b.RealneCislo)
                 };
             }
-            public double GetAbS()
+            public double DejAbsolutniHodnotu()
             {
-                return Math.Sqrt( Re * Re + Imaginari * Imaginari);
+                return Math.Sqrt( RealneCislo * RealneCislo + KomplexniCislo * KomplexniCislo);
             }
 
-            public Cplx Add(Cplx b)
+            public KomplexniCisla Add(KomplexniCisla b)
             {
-                Cplx a = this;
-                return new Cplx()
+                KomplexniCisla a = this;
+                return new KomplexniCisla()
                 {
-                    Re = a.Re + b.Re,
-                    Imaginari = a.Imaginari + b.Imaginari
+                    RealneCislo = a.RealneCislo + b.RealneCislo,
+                    KomplexniCislo = a.KomplexniCislo + b.KomplexniCislo
                 };
             }
-            public double GetAngleInDegrees()
+            public double DejUhelVeStupnich()
             {
-                return Math.Atan(Imaginari / Re);
+                return Math.Atan(KomplexniCislo / RealneCislo);
             }
-            public Cplx Subtract(Cplx b)
+            public KomplexniCisla Odecti(KomplexniCisla b)
             {
-                Cplx a = this;
-                return new Cplx()
+                KomplexniCisla a = this;
+                return new KomplexniCisla()
                 {
-                    Re = a.Re - b.Re,
-                    Imaginari = a.Imaginari - b.Imaginari
+                    RealneCislo = a.RealneCislo - b.RealneCislo,
+                    KomplexniCislo = a.KomplexniCislo - b.KomplexniCislo
                 };
             }
 
             public override string ToString()
             {
-                return $"({Re} + {Imaginari}i)";
+                return $"({RealneCislo} + {KomplexniCislo}i)";
             }
 
-            internal Cplx Divide(Cplx b)
+            internal KomplexniCisla Vydel(KomplexniCisla b)
             {
                 // (aRe + aIm*i) / (bRe + bIm*i)
                 // ((aRe + aIm*i) * (bRe - bIm*i)) / ((bRe + bIm*i) * (bRe - bIm*i))
                 //  bRe*bRe - bIm*bIm*i*i
-                var tmp = this.Multiply(new Cplx() { Re = b.Re, Imaginari = -b.Imaginari });
-                var tmp2 = b.Re * b.Re + b.Imaginari * b.Imaginari;
+                var citatel = this.Vynasob(new KomplexniCisla() { RealneCislo = b.RealneCislo, KomplexniCislo = -b.KomplexniCislo });
+                var jmenovatel = b.RealneCislo * b.RealneCislo + b.KomplexniCislo * b.KomplexniCislo;
 
-                return new Cplx()
+                return new KomplexniCisla()
                 {
-                    Re = tmp.Re / tmp2,
-                    Imaginari = (float)(tmp.Imaginari / tmp2)
+                    RealneCislo = citatel.RealneCislo / jmenovatel,
+                    KomplexniCislo = (float)(citatel.KomplexniCislo / jmenovatel)
                 };
             }
         }
