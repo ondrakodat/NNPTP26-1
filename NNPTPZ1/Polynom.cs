@@ -15,13 +15,23 @@ namespace NNPTPZ1
         /// </summary>
         public Polynom() => Koeficienty = new List<KomplexniCisla>();
 
+        public static Polynom PolynomialCoeficientAddition(double koeficient1, double koeficient2, double koeficient3, double koeficient4)
+        {
+            Polynom polynom = new Polynom();
+            polynom.Add(new KomplexniCisla() { RealnaCast = koeficient1 });
+            polynom.Add(new KomplexniCisla() { RealnaCast = koeficient2 });
+            polynom.Add(new KomplexniCisla() { RealnaCast = koeficient3 });
+            polynom.Add(new KomplexniCisla() { RealnaCast = koeficient4 });
+            return polynom;
+        }
+
         public void Add(KomplexniCisla koeficient) =>
             Koeficienty.Add(koeficient);
 
         /// <summary>
-        /// Derives this polynomial and creates new one
+        /// Derives this polynom and creates new one
         /// </summary>
-        /// <returns>Derivated polynomial</returns>
+        /// <returns>Derivated polynom</returns>
         public Polynom Derivuj()
         {
             Polynom polynom = new Polynom();
@@ -34,7 +44,7 @@ namespace NNPTPZ1
         }
 
         /// <summary>
-        /// Evaluates polynomial at given point
+        /// Evaluates polynom at given point
         /// </summary>
         /// <param name="x">point of evaluation</param>
         /// <returns>y</returns>
@@ -45,7 +55,7 @@ namespace NNPTPZ1
         }
 
         /// <summary>
-        /// Evaluates polynomial at given point
+        /// Evaluates polynom at given point
         /// </summary>
         /// <param name="x">point of evaluation</param>
         /// <returns>y</returns>
@@ -75,7 +85,7 @@ namespace NNPTPZ1
         /// <summary>
         /// ToString
         /// </summary>
-        /// <returns>String repr of polynomial</returns>
+        /// <returns>String repr of polynom</returns>
         public override string ToString()
         {
             string vysledek = "";
