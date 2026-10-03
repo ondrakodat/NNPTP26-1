@@ -13,7 +13,7 @@ using System.Drawing.Text;
 using System.Drawing.Drawing2D;
 using System.Linq.Expressions;
 using System.Threading;
-using NNPTPZ1.Mathematics;
+//using NNPTPZ1.Mathematics;
 
 namespace NNPTPZ1
 {
@@ -24,9 +24,9 @@ namespace NNPTPZ1
     ///
     /// Na začátku vytvoříme 2D plochu pro reálná a komplexní čísla pomocí 2 rozměrného pole "rozmeryVyslednehoObrazu"
     /// Poté dosadíme hranice pro obě osy dolní a horní hranici imaginární osy a dolní a horní hranici reálné osy
-    /// "Im∈[−2,2]" a "RealneCislo∈[−2,2]"
+    /// "Im∈[−2,2]" a "RealnaCast∈[−2,2]"
     /// Vytvoříme si polynom pro Newtonovu funkci 
-    /// Jako první výchozí bod pro Newtonovu funkci nám slouží -2 na Im a -2 na RealneCislo
+    /// Jako první výchozí bod pro Newtonovu funkci nám slouží -2 na Im a -2 na RealnaCast
     /// Od tohoto bodu počítáme funkci a dostáváme se do kořenů
     /// Pixel z bodu -2 -2 tedy poté dostane barvu daného kořene do kterého došel 
     /// Poté vezmeme další bod a opět spočítáme do kterého kořene jsme z něj došli a takto projdeme celou plochu
@@ -47,8 +47,7 @@ namespace NNPTPZ1
             {
                 rozmeryVyslednehoObrazu[i] = int.Parse(args[i]);
             }
-            double[] hraniceKomplexniRoviny
-                = new double[4];
+            double[] hraniceKomplexniRoviny = new double[4];
             for (int i = 0; i < hraniceKomplexniRoviny.Length; i++)
             {
                 hraniceKomplexniRoviny[i] = double.Parse(args[i + 2]);
@@ -56,7 +55,7 @@ namespace NNPTPZ1
             string output = args[6];
             // TODO: add parameters from args?
             /*
-             * Toto představuje plochu "Im∈[−2,2]" a "RealneCislo∈[−2,2]"
+             * Toto představuje plochu "Im∈[−2,2]" a "RealnaCast∈[−2,2]"
              */
             Bitmap outputPicture = new Bitmap(rozmeryVyslednehoObrazu[0], rozmeryVyslednehoObrazu[1]);
 
@@ -90,13 +89,13 @@ namespace NNPTPZ1
              
              */
             Polynom polynom = new Polynom();
-            polynom.Koeficienty.Add(new KomplexniCisla() { RealneCislo = 1 });
+            polynom.Koeficienty.Add(new KomplexniCisla() { RealnaCast = 1 });
             polynom.Koeficienty.Add(KomplexniCisla.Zero);
             polynom.Koeficienty.Add(KomplexniCisla.Zero);
             //polynom.Koeficienty.Add(KomplexniCisla.Zero);
-            polynom.Koeficienty.Add(new KomplexniCisla() { RealneCislo = 1 });
+            polynom.Koeficienty.Add(new KomplexniCisla() { RealnaCast = 1 });
             //Polynom ptmp = polynom;
-            Polynom derivacePolynomu = polynom.Derive();
+            Polynom derivacePolynomu = polynom.Derivuj();
 
             Console.WriteLine(polynom);
             Console.WriteLine(derivacePolynomu);
@@ -120,14 +119,14 @@ namespace NNPTPZ1
 
                     KomplexniCisla bodVProstoru = new KomplexniCisla()
                     {
-                        RealneCislo = x,
-                        KomplexniCislo = (float)(y)
+                        RealnaCast = x,
+                        ImaginarniCast = y
                     };
 
-                    if (bodVProstoru.RealneCislo == 0)
-                        bodVProstoru.RealneCislo = 0.0001;
-                    if (bodVProstoru.KomplexniCislo == 0)
-                        bodVProstoru.KomplexniCislo = 0.0001f;
+                    if (bodVProstoru.RealnaCast == 0)
+                        bodVProstoru.RealnaCast = 0.0001;
+                    if (bodVProstoru.ImaginarniCast == 0)
+                        bodVProstoru.ImaginarniCast = 0.0001f;
 
                     //Console.WriteLine(bodVProstoru);
 
@@ -139,7 +138,7 @@ namespace NNPTPZ1
                         bodVProstoru = bodVProstoru.Odecti(krokNewtonovyFunkce);
 
                         //Console.WriteLine($"{cisloIterace} {bodVProstoru} -({krokNewtonovyFunkce})");
-                        if (Math.Pow(krokNewtonovyFunkce.RealneCislo, 2) + Math.Pow(krokNewtonovyFunkce.KomplexniCislo, 2) >= 0.5)
+                        if (Math.Pow(krokNewtonovyFunkce.RealnaCast, 2) + Math.Pow(krokNewtonovyFunkce.ImaginarniCast, 2) >= 0.5)
                         {
                             cisloIterace--;
                         }
@@ -154,7 +153,7 @@ namespace NNPTPZ1
                     for (int w = 0; w <korenyPolynomu.Count;w++)
                     {
                         // Pokud jsme z bodu nedošli ke kořeni ale máme např. malou odchylku tedy 0.01
-                        if (Math.Pow(bodVProstoru.RealneCislo- korenyPolynomu[w].RealneCislo, 2) + Math.Pow(bodVProstoru.KomplexniCislo - korenyPolynomu[w].KomplexniCislo, 2) <= 0.01)
+                        if (Math.Pow(bodVProstoru.RealnaCast- korenyPolynomu[w].RealnaCast, 2) + Math.Pow(bodVProstoru.ImaginarniCast - korenyPolynomu[w].ImaginarniCast, 2) <= 0.01)
                         {
                             jeZnamyKoren = true;
                             cisloKorene = w;
@@ -194,11 +193,14 @@ namespace NNPTPZ1
             //Console.ReadKey();
         }
     }
-
+    /*
     namespace Mathematics
     {
+        
         public class Polynom
         {
+            
+
             /// <summary>
             /// Koeficienty
             /// </summary>
@@ -216,12 +218,12 @@ namespace NNPTPZ1
             /// Derives this polynomial and creates new one
             /// </summary>
             /// <returns>Derivated polynomial</returns>
-            public Polynom Derive()
+            public Polynom Derivuj()
             {
                 Polynom polynom = new Polynom();
                 for (int q = 1; q < Koeficienty.Count; q++)
                 {
-                    polynom.Koeficienty.Add(Koeficienty[q].Vynasob(new KomplexniCisla() { RealneCislo = q }));
+                    polynom.Koeficienty.Add(Koeficienty[q].Vynasob(new KomplexniCisla() { RealnaCast = q }));
                 }
 
                 return polynom;
@@ -234,7 +236,7 @@ namespace NNPTPZ1
             /// <returns>y</returns>
             public KomplexniCisla Eval(double x)
             {
-                var y = VypocitelHodnotu(new KomplexniCisla() { RealneCislo = x, KomplexniCislo = 0 });
+                var y = VypocitelHodnotu(new KomplexniCisla() { RealnaCast = x, ImaginarniCast = 0 });
                 return y;
             }
 
@@ -290,27 +292,29 @@ namespace NNPTPZ1
                 }
                 return vysledek;
             }
+        
         }
 
+    
         public class KomplexniCisla
         {
-            public double RealneCislo { get; set; }
-            public float KomplexniCislo { get; set; }
+            public double RealnaCast { get; set; }
+            public float ImaginarniCast { get; set; }
 
             public override bool Equals(object obj)
             {
                 if (obj is KomplexniCisla)
                 {
                     KomplexniCisla x = obj as KomplexniCisla;
-                    return x.RealneCislo == RealneCislo && x.KomplexniCislo == KomplexniCislo;
+                    return x.RealnaCast == RealnaCast && x.ImaginarniCast == ImaginarniCast;
                 }
                 return base.Equals(obj);
             }
 
             public readonly static KomplexniCisla Zero = new KomplexniCisla()
             {
-                RealneCislo = 0,
-                KomplexniCislo = 0
+                RealnaCast = 0,
+                ImaginarniCast = 0
             };
 
             public KomplexniCisla Vynasob(KomplexniCisla b)
@@ -319,13 +323,13 @@ namespace NNPTPZ1
                 // aRe*bRe + aRe*bIm*i + aIm*bRe*i + aIm*bIm*i*i
                 return new KomplexniCisla()
                 {
-                    RealneCislo = a.RealneCislo * b.RealneCislo - a.KomplexniCislo * b.KomplexniCislo,
-                    KomplexniCislo = (float)(a.RealneCislo * b.KomplexniCislo + a.KomplexniCislo * b.RealneCislo)
+                    RealnaCast = a.RealnaCast * b.RealnaCast - a.ImaginarniCast * b.ImaginarniCast,
+                    ImaginarniCast = (float)(a.RealnaCast * b.ImaginarniCast + a.ImaginarniCast * b.RealnaCast)
                 };
             }
             public double DejAbsolutniHodnotu()
             {
-                return Math.Sqrt( RealneCislo * RealneCislo + KomplexniCislo * KomplexniCislo);
+                return Math.Sqrt( RealnaCast * RealnaCast + ImaginarniCast * ImaginarniCast);
             }
 
             public KomplexniCisla Add(KomplexniCisla b)
@@ -333,27 +337,27 @@ namespace NNPTPZ1
                 KomplexniCisla a = this;
                 return new KomplexniCisla()
                 {
-                    RealneCislo = a.RealneCislo + b.RealneCislo,
-                    KomplexniCislo = a.KomplexniCislo + b.KomplexniCislo
+                    RealnaCast = a.RealnaCast + b.RealnaCast,
+                    ImaginarniCast = a.ImaginarniCast + b.ImaginarniCast
                 };
             }
             public double DejUhelVeStupnich()
             {
-                return Math.Atan(KomplexniCislo / RealneCislo);
+                return Math.Atan(ImaginarniCast / RealnaCast);
             }
             public KomplexniCisla Odecti(KomplexniCisla b)
             {
                 KomplexniCisla a = this;
                 return new KomplexniCisla()
                 {
-                    RealneCislo = a.RealneCislo - b.RealneCislo,
-                    KomplexniCislo = a.KomplexniCislo - b.KomplexniCislo
+                    RealnaCast = a.RealnaCast - b.RealnaCast,
+                    ImaginarniCast = a.ImaginarniCast - b.ImaginarniCast
                 };
             }
 
             public override string ToString()
             {
-                return $"({RealneCislo} + {KomplexniCislo}i)";
+                return $"({RealnaCast} + {ImaginarniCast}i)";
             }
 
             internal KomplexniCisla Vydel(KomplexniCisla b)
@@ -361,15 +365,19 @@ namespace NNPTPZ1
                 // (aRe + aIm*i) / (bRe + bIm*i)
                 // ((aRe + aIm*i) * (bRe - bIm*i)) / ((bRe + bIm*i) * (bRe - bIm*i))
                 //  bRe*bRe - bIm*bIm*i*i
-                var citatel = this.Vynasob(new KomplexniCisla() { RealneCislo = b.RealneCislo, KomplexniCislo = -b.KomplexniCislo });
-                var jmenovatel = b.RealneCislo * b.RealneCislo + b.KomplexniCislo * b.KomplexniCislo;
+                var citatel = this.Vynasob(new KomplexniCisla() { RealnaCast = b.RealnaCast, ImaginarniCast = -b.ImaginarniCast });
+                var jmenovatel = b.RealnaCast * b.RealnaCast + b.ImaginarniCast * b.ImaginarniCast;
 
                 return new KomplexniCisla()
                 {
-                    RealneCislo = citatel.RealneCislo / jmenovatel,
-                    KomplexniCislo = (float)(citatel.KomplexniCislo / jmenovatel)
+                    RealnaCast = citatel.RealnaCast / jmenovatel,
+                    ImaginarniCast = (float)(citatel.ImaginarniCast / jmenovatel)
                 };
             }
+        
         }
+        
     }
+
+    */
 }
