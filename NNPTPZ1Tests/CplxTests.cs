@@ -16,22 +16,22 @@ namespace NNPTPZ1.Mathematics.Tests
         [TestMethod()]
         public void AddTest()
         {
-            KomplexniCisla a = new KomplexniCisla()
+            ComplexNumber a = new ComplexNumber()
             {
-                RealnaCast = 10,
-                ImaginarniCast = 20
+                RealPart = 10,
+                ImaginaryPart = 20
             };
-            KomplexniCisla b = new KomplexniCisla()
+            ComplexNumber b = new ComplexNumber()
             {
-                RealnaCast = 1,
-                ImaginarniCast = 2
+                RealPart = 1,
+                ImaginaryPart = 2
             };
 
-            KomplexniCisla actual = a.Add(b);
-            KomplexniCisla shouldBe = new KomplexniCisla()
+            ComplexNumber actual = a.Add(b);
+            ComplexNumber shouldBe = new ComplexNumber()
             {
-                RealnaCast = 11,
-                ImaginarniCast = 22
+                RealPart = 11,
+                ImaginaryPart = 22
             };
 
             Assert.AreEqual(shouldBe, actual);
@@ -43,13 +43,13 @@ namespace NNPTPZ1.Mathematics.Tests
             r2 = b.ToString();
             Assert.AreEqual(e2, r2);
 
-            a = new KomplexniCisla()
+            a = new ComplexNumber()
             {
-                RealnaCast = 1,
-                ImaginarniCast = -1
+                RealPart = 1,
+                ImaginaryPart = -1
             };
-            b = new KomplexniCisla() { RealnaCast = 0, ImaginarniCast = 0 };
-            shouldBe = new KomplexniCisla() { RealnaCast = 1, ImaginarniCast = -1 };
+            b = new ComplexNumber() { RealPart = 0, ImaginaryPart = 0 };
+            shouldBe = new ComplexNumber() { RealPart = 1, ImaginaryPart = -1 };
             actual = a.Add(b);
             Assert.AreEqual(shouldBe, actual);
 
@@ -65,18 +65,18 @@ namespace NNPTPZ1.Mathematics.Tests
         [TestMethod()]
         public void AddTestPolynome()
         {
-            Polynom poly = new Polynom();
-            poly.Koeficienty.Add(new KomplexniCisla() { RealnaCast = 1, ImaginarniCast = 0 });
-            poly.Koeficienty.Add(new KomplexniCisla() { RealnaCast = 0, ImaginarniCast = 0 });
-            poly.Koeficienty.Add(new KomplexniCisla() { RealnaCast = 1, ImaginarniCast = 0 });
-            KomplexniCisla result = poly.VypocitelHodnotu(new KomplexniCisla() { RealnaCast = 0, ImaginarniCast = 0 });
-            var expected = new KomplexniCisla() { RealnaCast = 1, ImaginarniCast = 0 };
+            Polynomial poly = new Polynomial();
+            poly.Coefficients.Add(new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 });
+            poly.Coefficients.Add(new ComplexNumber() { RealPart = 0, ImaginaryPart = 0 });
+            poly.Coefficients.Add(new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 });
+            ComplexNumber result = poly.CalculateValue(new ComplexNumber() { RealPart = 0, ImaginaryPart = 0 });
+            var expected = new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 };
             Assert.AreEqual(expected, result);
-            result = poly.VypocitelHodnotu(new KomplexniCisla() { RealnaCast = 1, ImaginarniCast = 0 });
-            expected = new KomplexniCisla() { RealnaCast = 2, ImaginarniCast = 0 };
+            result = poly.CalculateValue(new ComplexNumber() { RealPart = 1, ImaginaryPart = 0 });
+            expected = new ComplexNumber() { RealPart = 2, ImaginaryPart = 0 };
             Assert.AreEqual(expected, result);
-            result = poly.VypocitelHodnotu(new KomplexniCisla() { RealnaCast = 2, ImaginarniCast = 0 });
-            expected = new KomplexniCisla() { RealnaCast = 5.0000000000, ImaginarniCast = 0 };
+            result = poly.CalculateValue(new ComplexNumber() { RealPart = 2, ImaginaryPart = 0 });
+            expected = new ComplexNumber() { RealPart = 5.0000000000, ImaginaryPart = 0 };
             Assert.AreEqual(expected, result);
 
             var r2 = poly.ToString();

@@ -1,0 +1,156 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+
+namespace NNPTPZ1
+{
+    public class NewtonFractal
+    {
+
+        public int AreaWidth { get; set; }
+        public int AreaHeight { get; set; }
+
+        public double MinRealAxis { get; set; }
+        public double MaxRealAxis { get; set; }
+
+        public double MinImaginaryAxis { get; set; }
+        public double MaxImaginaryAxis { get; set; }
+
+        public string OutputFile { get; set; }
+
+        public Bitmap OutputImage { get; set; }
+
+        public bool PrepareEnvironment(string[] args) {
+
+            if (args.Length < 7) {
+                throw new ArgumentException("Expected 7 arguments.");
+            }
+
+            try
+            {
+                AreaWidth = int.Parse(args[0]);
+                AreaHeight = int.Parse(args[1]);
+
+                MinRealAxis = double.Parse(args[2]);
+                MaxRealAxis = double.Parse(args[3]);
+
+                MinImaginaryAxis = double.Parse(args[4]);
+                MaxImaginaryAxis = double.Parse(args[5]);
+
+                OutputFile = args[6];
+
+                return true;
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Some of input has invalid format");
+                return false;
+            }
+        }
+
+
+        public void DoCalculation() {
+            double[] coeficients = {1, 0, 0, 1 };
+            Polynomial polynomial = Polynomial.CreatePolynomialWithCoefficients(coeficients);
+            Polynomial polynomialDerivation = polynomial.Derive();
+
+            List<ComplexNumber> polynomialRoots = new List<ComplexNumber>();
+            OutputImage = new Bitmap(AreaWidth, AreaHeight);
+
+            var rootColors = new Color[]
+            {
+                Color.Red, 
+                Color.Blue,
+                Color.Green, 
+                Color.Yellow, 
+                Color.Orange,
+                Color.Fuchsia, 
+                Color.Gold,
+                Color.Cyan,
+                Color.Magenta
+            };
+            double xStep = (MaxRealAxis - MinRealAxis) / AreaWidth;
+            double yStep = (MaxImaginaryAxis - MinImaginaryAxis) / AreaHeight;
+
+            for (int row = 0; row < AreaWidth; row++)
+            {
+                for (int column = 0; column < AreaHeight; column++)
+                {
+                    // find "world" coordinates of pixel
+                    double y = MinImaginaryAxis + row * yStep;
+                    double x = MinRealAxis + column * xStep;
+
+                    ComplexNumber pointInArea = new ComplexNumber()
+                    {
+                        RealPart = x,
+                        ImaginaryPart = y
+                    };
+
+                    if (pointInArea.RealPart == 0)
+                        pointInArea.RealPart = 0.0001;
+                    if (pointInArea.ImaginaryPart == 0)
+                        pointInArea.ImaginaryPart = 0.0001f;
+
+                    // find solution of equation using newton'vysledek iteration
+                    int iteration = 0;
+
+                    pointInArea = DoNewtonIteration(pointInArea ,polynomial, polynomialDerivation, out iteration);
+
+                    // find solution root number
+                    var isKnownRoot = false;
+                    var rootNumber = 0;
+                    for (int rootIndex = 0; rootIndex < polynomialRoots.Count; rootIndex++)
+                    {
+                        // Pokud jsme z bodu nedošli ke kořeni ale máme např. malou odchylku tedy 0.01
+                        if (Math.Pow(pointInArea.RealPart - polynomialRoots[rootIndex].RealPart, 2) + Math.Pow(pointInArea.ImaginaryPart - polynomialRoots[rootIndex].ImaginaryPart, 2) <= 0.01)
+                        {
+                            isKnownRoot = true;
+                            rootNumber = rootIndex;
+                        }
+                    }
+                    if (!isKnownRoot)
+                    {
+                        polynomialRoots.Add(pointInArea);
+                        rootNumber = polynomialRoots.Count -1;
+                    }
+                    ColorizePixel(OutputImage, row, column, rootColors, iteration, rootNumber);
+                }
+            }
+        }
+
+        private void ColorizePixel(Bitmap outputImage, int i, int j, Color[] colors, int iterations, int rootIndex ) {
+            Color color = colors[rootIndex % colors.Length];
+
+            color = Color.FromArgb(
+                Math.Min(Math.Max(0, color.R - iterations * 2), 255),
+                Math.Min(Math.Max(0, color.G - iterations * 2), 255),
+                Math.Min(Math.Max(0, color.B - iterations * 2), 255)
+            );
+
+            outputImage.SetPixel(j, i, color);
+        }
+
+        private ComplexNumber DoNewtonIteration(ComplexNumber pointInArea, Polynomial polynomial, Polynomial polynomialDerivation, out int iterations) {
+
+            iterations = 0;
+            for (int iterationNumber = 0; iterationNumber < 30; iterationNumber++)
+            {
+                var stepOfNewtonIteration = polynomial.CalculateValue(pointInArea).Divide(polynomialDerivation.CalculateValue(pointInArea));
+                pointInArea = pointInArea.Subtract(stepOfNewtonIteration);
+
+                if (Math.Pow(stepOfNewtonIteration.RealPart, 2) + Math.Pow(stepOfNewtonIteration.ImaginaryPart, 2) >= 0.5)
+                {
+                    iterationNumber--;
+                }
+                iterations++;
+            }
+
+            return pointInArea;
+        }
+
+        public void SaveOutput() {
+            OutputImage.Save(OutputFile ?? "../../../out.png");
+        }
+        
+    }
+}
