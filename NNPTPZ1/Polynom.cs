@@ -15,7 +15,7 @@ namespace NNPTPZ1
         /// </summary>
         public Polynom() => Koeficienty = new List<KomplexniCisla>();
 
-        public static Polynom PolynomialCoeficientAddition(double koeficient1, double koeficient2, double koeficient3, double koeficient4)
+        public static Polynom PridaniKoeficientu(double koeficient1, double koeficient2, double koeficient3, double koeficient4)
         {
             Polynom polynom = new Polynom();
             polynom.Add(new KomplexniCisla() { RealnaCast = koeficient1 });
