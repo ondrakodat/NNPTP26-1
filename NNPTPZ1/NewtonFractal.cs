@@ -6,6 +6,12 @@ namespace NNPTPZ1
 {
     public class NewtonFractal
     {
+        private const int ExpectedArgumentsCount = 7;
+        private const double ReplacementForZero = 0.0001;
+        private const double RootTolerance = 0.01;
+        private const int MaxIterationsCount = 30;
+        private const double NewtonStepLimit = 0.5;
+        private const int ColorDarkeningFactor = 2;
 
         public int AreaWidth { get; set; }
         public int AreaHeight { get; set; }
@@ -22,8 +28,8 @@ namespace NNPTPZ1
 
         public bool PrepareEnvironment(string[] args) {
 
-            if (args.Length < 7) {
-                throw new ArgumentException("Expected 7 arguments.");
+            if (args.Length < ExpectedArgumentsCount) {
+                throw new ArgumentException($"Expected {ExpectedArgumentsCount} arguments.");
             }
 
             try
@@ -88,9 +94,9 @@ namespace NNPTPZ1
 
                     //Deleted "f" from pointInArea.ImaginaryPart + adding this text because git didnt saw it as change somehow
                     if (pointInArea.RealPart == 0)
-                        pointInArea.RealPart = 0.0001;
+                        pointInArea.RealPart = ReplacementForZero;
                     if (pointInArea.ImaginaryPart == 0)
-                        pointInArea.ImaginaryPart = 0.0001;
+                        pointInArea.ImaginaryPart = ReplacementForZero;
 
                     // find solution of equation using newton'vysledek iteration
                     int iteration = 0;
@@ -103,7 +109,7 @@ namespace NNPTPZ1
                     for (int rootIndex = 0; rootIndex < polynomialRoots.Count; rootIndex++)
                     {
                         // Pokud jsme z bodu nedošli ke kořeni ale máme např. malou odchylku tedy 0.01
-                        if (Math.Pow(pointInArea.RealPart - polynomialRoots[rootIndex].RealPart, 2) + Math.Pow(pointInArea.ImaginaryPart - polynomialRoots[rootIndex].ImaginaryPart, 2) <= 0.01)
+                        if (Math.Pow(pointInArea.RealPart - polynomialRoots[rootIndex].RealPart, 2) + Math.Pow(pointInArea.ImaginaryPart - polynomialRoots[rootIndex].ImaginaryPart, 2) <= RootTolerance)
                         {
                             isKnownRoot = true;
                             rootNumber = rootIndex;
@@ -123,9 +129,9 @@ namespace NNPTPZ1
             Color color = colors[rootIndex % colors.Length];
 
             color = Color.FromArgb(
-                Math.Min(Math.Max(0, color.R - iterations * 2), 255),
-                Math.Min(Math.Max(0, color.G - iterations * 2), 255),
-                Math.Min(Math.Max(0, color.B - iterations * 2), 255)
+                Math.Min(Math.Max(0, color.R - iterations * ColorDarkeningFactor), 255),
+                Math.Min(Math.Max(0, color.G - iterations * ColorDarkeningFactor), 255),
+                Math.Min(Math.Max(0, color.B - iterations * ColorDarkeningFactor), 255)
             );
 
             outputImage.SetPixel(j, i, color);
@@ -134,12 +140,12 @@ namespace NNPTPZ1
         private ComplexNumber DoNewtonIteration(ComplexNumber pointInArea, Polynomial polynomial, Polynomial polynomialDerivation, out int iterations) {
 
             iterations = 0;
-            for (int iterationNumber = 0; iterationNumber < 30; iterationNumber++)
+            for (int iterationNumber = 0; iterationNumber < MaxIterationsCount; iterationNumber++)
             {
                 var stepOfNewtonIteration = polynomial.CalculateValue(pointInArea).Divide(polynomialDerivation.CalculateValue(pointInArea));
                 pointInArea = pointInArea.Subtract(stepOfNewtonIteration);
 
-                if (Math.Pow(stepOfNewtonIteration.RealPart, 2) + Math.Pow(stepOfNewtonIteration.ImaginaryPart, 2) >= 0.5)
+                if (Math.Pow(stepOfNewtonIteration.RealPart, 2) + Math.Pow(stepOfNewtonIteration.ImaginaryPart, 2) >= NewtonStepLimit)
                 {
                     iterationNumber--;
                 }
