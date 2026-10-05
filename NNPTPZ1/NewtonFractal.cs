@@ -86,10 +86,11 @@ namespace NNPTPZ1
                         ImaginaryPart = y
                     };
 
+                    //Deleted "f" from pointInArea.ImaginaryPart + adding this text because git didnt saw it as change somehow
                     if (pointInArea.RealPart == 0)
                         pointInArea.RealPart = 0.0001;
                     if (pointInArea.ImaginaryPart == 0)
-                        pointInArea.ImaginaryPart = 0.0001f;
+                        pointInArea.ImaginaryPart = 0.0001;
 
                     // find solution of equation using newton'vysledek iteration
                     int iteration = 0;
