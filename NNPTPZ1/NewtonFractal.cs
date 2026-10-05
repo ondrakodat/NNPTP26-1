@@ -78,9 +78,9 @@ namespace NNPTPZ1
             double xStep = (MaxRealAxis - MinRealAxis) / AreaWidth;
             double yStep = (MaxImaginaryAxis - MinImaginaryAxis) / AreaHeight;
 
-            for (int row = 0; row < AreaWidth; row++)
+            for (int row = 0; row < AreaHeight; row++)
             {
-                for (int column = 0; column < AreaHeight; column++)
+                for (int column = 0; column < AreaWidth; column++)
                 {
                     // find "world" coordinates of pixel
                     double y = MinImaginaryAxis + row * yStep;
@@ -92,7 +92,6 @@ namespace NNPTPZ1
                         ImaginaryPart = y
                     };
 
-                    //Deleted "f" from pointInArea.ImaginaryPart + adding this text because git didnt saw it as change somehow
                     if (pointInArea.RealPart == 0)
                         pointInArea.RealPart = ReplacementForZero;
                     if (pointInArea.ImaginaryPart == 0)
@@ -108,7 +107,6 @@ namespace NNPTPZ1
                     var rootNumber = 0;
                     for (int rootIndex = 0; rootIndex < polynomialRoots.Count; rootIndex++)
                     {
-                        // Pokud jsme z bodu nedošli ke kořeni ale máme např. malou odchylku tedy 0.01
                         if (Math.Pow(pointInArea.RealPart - polynomialRoots[rootIndex].RealPart, 2) + Math.Pow(pointInArea.ImaginaryPart - polynomialRoots[rootIndex].ImaginaryPart, 2) <= RootTolerance)
                         {
                             isKnownRoot = true;
