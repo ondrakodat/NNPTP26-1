@@ -56,8 +56,8 @@ namespace NNPTPZ1
 
 
         public void DoCalculation() {
-            double[] coeficients = {1, 0, 0, 1 };
-            Polynomial polynomial = Polynomial.CreatePolynomialWithCoefficients(coeficients);
+            double[] coefficients = {1, 0, 0, 1 };
+            Polynomial polynomial = Polynomial.CreatePolynomialWithCoefficients(coefficients);
             Polynomial polynomialDerivation = polynomial.Derive();
 
             List<ComplexNumber> polynomialRoots = new List<ComplexNumber>();
@@ -157,6 +157,7 @@ namespace NNPTPZ1
 
         public void SaveOutput() {
             OutputImage.Save(OutputFile ?? "../../../out.png");
+            OutputImage.Dispose();
         }
         
     }
