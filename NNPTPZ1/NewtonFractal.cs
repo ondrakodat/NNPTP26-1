@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Drawing;
 
 namespace NNPTPZ1
@@ -56,10 +57,12 @@ namespace NNPTPZ1
 
 
         public void DoCalculation() {
-            double[] coefficients = {1, 0, 0, 1 };
-            Polynomial polynomial = Polynomial.CreatePolynomialWithCoefficients(coefficients);
-            Polynomial polynomialDerivation = polynomial.Derive();
+            Polynomial polynomial;
+            Polynomial polynomialDerivation;
+            double xStep;
+            double yStep;
 
+            CreatePolynomial(out polynomial, out polynomialDerivation);
             List<ComplexNumber> polynomialRoots = new List<ComplexNumber>();
             OutputImage = new Bitmap(AreaWidth, AreaHeight);
 
@@ -75,52 +78,75 @@ namespace NNPTPZ1
                 Color.Cyan,
                 Color.Magenta
             };
-            double xStep = (MaxRealAxis - MinRealAxis) / AreaWidth;
-            double yStep = (MaxImaginaryAxis - MinImaginaryAxis) / AreaHeight;
+
+            FindXandYStep(out xStep,out yStep);
 
             for (int row = 0; row < AreaHeight; row++)
             {
                 for (int column = 0; column < AreaWidth; column++)
                 {
-                    // find "world" coordinates of pixel
-                    double y = MinImaginaryAxis + row * yStep;
-                    double x = MinRealAxis + column * xStep;
+                    // find "world" coordinates of pixel                   
+                    ComplexNumber pointInArea = SetUpPointInArea( row, column,  yStep, xStep);
 
-                    ComplexNumber pointInArea = new ComplexNumber()
-                    {
-                        RealPart = x,
-                        ImaginaryPart = y
-                    };
-
-                    if (pointInArea.RealPart == 0)
-                        pointInArea.RealPart = ReplacementForZero;
-                    if (pointInArea.ImaginaryPart == 0)
-                        pointInArea.ImaginaryPart = ReplacementForZero;
-
-                    // find solution of equation using newton'vysledek iteration
                     int iteration = 0;
-
+                    // find solution of equation using newton'vysledek iteration
                     pointInArea = DoNewtonIteration(pointInArea ,polynomial, polynomialDerivation, out iteration);
-
-                    // find solution root number
-                    var isKnownRoot = false;
                     var rootNumber = 0;
-                    for (int rootIndex = 0; rootIndex < polynomialRoots.Count; rootIndex++)
-                    {
-                        if (Math.Pow(pointInArea.RealPart - polynomialRoots[rootIndex].RealPart, 2) + Math.Pow(pointInArea.ImaginaryPart - polynomialRoots[rootIndex].ImaginaryPart, 2) <= RootTolerance)
-                        {
-                            isKnownRoot = true;
-                            rootNumber = rootIndex;
-                        }
-                    }
-                    if (!isKnownRoot)
-                    {
-                        polynomialRoots.Add(pointInArea);
-                        rootNumber = polynomialRoots.Count -1;
-                    }
+                    // find solution root number
+                    FindRootNumber(polynomialRoots, pointInArea, out rootNumber);
+
                     ColorizePixel(OutputImage, row, column, rootColors, iteration, rootNumber);
                 }
             }
+        }
+
+        private ComplexNumber SetUpPointInArea( int row, int column, double yStep, double xStep) {
+            double y = MinImaginaryAxis + row * yStep;
+            double x = MinRealAxis + column * xStep;
+
+            ComplexNumber pointInArea = new ComplexNumber()
+            {
+                RealPart = x,
+                ImaginaryPart = y
+            };
+            
+
+            if (pointInArea.RealPart == 0)
+                pointInArea.RealPart = ReplacementForZero;
+            if (pointInArea.ImaginaryPart == 0)
+                pointInArea.ImaginaryPart = ReplacementForZero;
+
+            return pointInArea;
+
+        }
+
+        private void CreatePolynomial(out Polynomial polynomial, out Polynomial polynomialDerivation) {
+            double[] coefficients = { 1, 0, 0, 1 };
+            polynomial = Polynomial.CreatePolynomialWithCoefficients(coefficients);
+            polynomialDerivation = polynomial.Derive();
+        }
+
+        private void FindRootNumber( List<ComplexNumber> polynomialRoots, ComplexNumber pointInArea, out int rootNumber) {
+            var isKnownRoot = false;
+            rootNumber = 0;
+            for (int rootIndex = 0; rootIndex < polynomialRoots.Count; rootIndex++)
+            {
+                if (Math.Pow(pointInArea.RealPart - polynomialRoots[rootIndex].RealPart, 2) + Math.Pow(pointInArea.ImaginaryPart - polynomialRoots[rootIndex].ImaginaryPart, 2) <= RootTolerance)
+                {
+                    isKnownRoot = true;
+                    rootNumber = rootIndex;
+                }
+            }
+            if (!isKnownRoot)
+            {
+                polynomialRoots.Add(pointInArea);
+                rootNumber = polynomialRoots.Count - 1;
+            }
+        }
+
+        private void FindXandYStep(out double xStep, out double yStep) {
+             xStep = (MaxRealAxis - MinRealAxis) / AreaWidth;
+             yStep = (MaxImaginaryAxis - MinImaginaryAxis) / AreaHeight;
         }
 
         private void ColorizePixel(Bitmap outputImage, int i, int j, Color[] colors, int iterations, int rootIndex ) {
